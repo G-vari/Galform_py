@@ -340,8 +340,40 @@ def Beta_J_disk_BR(rdisks, mcold, mstar_disk, Jcold_molecular, vdisk_gas):
 
 
 
-def nonlinear_sfr_fb_term(rdisks, vdisks, mcold, mstar_disk, Zcold, Jcold):
+def nonlinear_sfr_fb_term(rdisks, vdisks, mcold, mstar_disk, Zcold, Jcold, mcold_start, Jcold_start, mZcold_start, dt):
     """Calculate mass/J exchange rates using the BR06 SF law"""
+
+    '''#Norm_Sigma_0 = 2.90000E+03
+    #Norm_fgas_Sigma_0 =   1.50000E-01
+
+    Norm_Sigma_0 = 1600
+    Norm_fgas_Sigma_0 = 0.12
+
+    Norm_hgas_0 = 15
+    Norm_fgas_hgas_0 = 0.02
+
+    fgas_track = mcold / (mstar_disk+mcold) # dimensionless
+    sdens_gas_track = mcold * np.exp(-Constant.RDISK_HALF_SCALE) / (2*np.pi*np.square(rdisks[0]*10**3/Constant.RDISK_HALF_SCALE)) # Msun pc^-2
+
+    beta_track = (sdens_gas_track/Norm_Sigma_0)**-0.6 * (fgas_track/Norm_fgas_Sigma_0)**0.8
+
+    sigma_gas = 10
+    sigma_gas = 10.0 #kms-1
+    G = 6.67384 * 10 **-11 # m3 kg-1 s-2
+    Msun = 1.989*10**30 # kg
+    pc = 3.08567758 * 10** 16 # m
+    G = G * Msun / pc / (10**6) # Msun^-1 pc^-1 km^2 s^-2
+
+
+    rconv = Constant.RDISK_HALF_SCALE
+    sdens_star_track = mstar_disk * np.exp(-rconv) / (2*np.pi*np.square(rdisks[0]*10**3/rconv)) # Msun pc^-2
+
+    sigma_star_track = max(np.sqrt(np.pi*G*0.14*rdisks[0]*10**3*sdens_star_track),sigma_gas) # kms-1
+    
+    h_gas_track = sigma_gas**2 / (np.pi * G * (sdens_gas_track + sigma_gas*sdens_star_track/sigma_star_track)) # pc
+            
+    beta_track2 = (h_gas_track/Norm_hgas_0)**1.1 * (fgas_track/Norm_fgas_hgas_0)**0.4'''
+
 
     if rdisks[0] == 0.0:
         nonlinear_sfr_fb_term = np.zeros(Parameter.n_linalg_variables)
@@ -371,6 +403,12 @@ def nonlinear_sfr_fb_term(rdisks, vdisks, mcold, mstar_disk, Zcold, Jcold):
         # Calculate molecular gas angular momentum. Note, this only works if the SFR law is linear in molecular gas surface density
         Jcold_molecular = Jfr / Parameter.nu_sf
 
+    '''print "mmol/mcold, Jmol/Jcold, jmol, jcold, Jfr_new/Jfr_old"
+    print mcold_molecular / mcold, J_molecular / Jcold, J_molecular / mcold_molecular, Jcold / mcold, Jfr/(sfr*Jcold/mcold)
+    print J_molecular * 0.5, Jfr
+    print mcold_molecular * 0.5, sfr
+    exit()'''
+
     # Calculate the total mass loading factor of the galaxy disk
     if not Parameter.new_sne_scheme:
         beta = (Parameter.vhot/vdisk_gas)**Parameter.alphahot
@@ -388,13 +426,106 @@ def nonlinear_sfr_fb_term(rdisks, vdisks, mcold, mstar_disk, Zcold, Jcold):
         else:
             beta_J = beta
 
+
+
+    '''r2 = np.arange(0,10*rdisks[0],0.01)
+    x = np.zeros_like(r2)
+    beta_a = np.zeros_like(r2)
+    sigma_mol = np.zeros_like(r2)
+    for n in range(len(r2)):
+        x[n] = Beta_BR_integrand(r2[n],rdisks, mcold, mstar_disk)
+        beta_a[n] = Beta_Annulus(r2[n], rdisks, mcold, mstar_disk)
+        sigma_mol[n] = Molecular_Gas_BR_integrand(r2[n], rdisks, mcold, mstar_disk)
+
+    print h_gas_track
+    print h_gas(rdisks[0], rdisks, mcold, mstar_disk) * 1000
+
+    beta_int = Beta_disk_BR(rdisks, mcold, mstar_disk, mcold_molecular)
+
+    print beta_track, beta_track2, beta_int, beta
+
+    import pylab as py
+    py.plot(r2, np.log10(x), c="b")
+    py.plot(r2, np.log10(beta_a), c="r")
+    py.plot(r2, np.log10(sigma_mol), c="g")
+    py.axvline(rdisks[0])
+    py.axhline(np.log10(beta_track))
+    py.show()
+
+    print "here2"
+    print beta, beta_int, beta_track, beta_track2, beta_int / beta_track
+    print ""'''
+
+    ######### Limit mass / angular momentum loading factors to prevent numerical errors #############
+
+    '''if beta > 1000:
+        beta = 1000
+    if beta_J > 1000:
+        beta = 1000'''
+
+    ######### Limit cold gas mass/J depletion timescales to prevent numerical errors ################
+
+    limited = False
+
+    tau_star = mcold / sfr
+    sfr_unlimited = sfr
+    tau_effective = tau_star / (1-Parameter.R+beta)  # prevent t_effective from dropping below the timestep dize. This stops errors appearing in first few timesteps
+
+    if tau_effective < dt:
+        sfr = 0.999 * mcold / dt * (1-Parameter.R+beta)
+        limited = True
+        #print "limited sfr1"
+
+    tau_Jstar = Jcold / Jfr
+    tau_Jeffective = tau_Jstar / (1-Parameter.R+beta_J)
+
+    if tau_Jeffective < dt:
+        Jfr = 0.999 * Jcold / dt * (1-Parameter.R+beta_J)
+        #print "limited J1"
+        limited = True
+
+    # limit to prevent cold gas depletion rate from being high enough to deplete the cold gas reservoir that is present at the start of the full RK step
+    # Note, this isn't very rigorous and should probably be improved in the future
+    if mcold_start > 0.0:
+        mcold_dot_limit = mcold_start / (dt*2.0)
+        sfr_limit = mcold_dot_limit / (1-Parameter.R+beta)
+
+        if sfr > sfr_limit:
+            sfr = 0.999 * sfr_limit
+            limited = True
+    else:
+        sfr = 0.0 # prevent star formation until there is gas present in the disk at the start of the full RK step
+
+    if mcold_start > 0.0:
+        mZcold_dot_limit = mZcold_start / (dt*2.0)
+        sfrZ_limit = mZcold_dot_limit / (1-Parameter.R+beta)
+
+        if sfr * Zcold > sfrZ_limit:
+            sfr = 0.999 * sfrZ_limit / Zcold
+            limited = True
+
+    if Jcold_start > 0.0:
+        Jcold_dot_limit = Jcold_start / (dt*2.0)
+        Jfr_limit = Jcold_dot_limit / (1-Parameter.R+beta_J)
+
+        if Jfr > Jfr_limit:
+            Jfr = 0.999 * Jfr_limit
+            limited = True
+    else:
+        Jfr = 0.0 # prevent star formation until there is gas present in the disk at the start of the full RK step
+
+    #print (Parameter.vhot/vdisk_gas)**Parameter.alphahot , Beta_disk_BR(rdisks, mcold, mstar_disk, mcold_molecular)
+
     R = Parameter.R
     p = Parameter.p   
 
-    #                                 halo  hot  cold             res       stars      hotZ coldZ                          resZ            stellarZ         haloJ hotJ coldJ             resJ        stellarJ    notional mass/J
-    nonlinear_sfr_fb_term = np.array([ 0.0, 0.0, -(1-R+beta)*sfr, beta*sfr, (1-R)*sfr, 0.0, -(1-R+beta)*sfr*Zcold + p*sfr, beta*sfr*Zcold, (1-R)*sfr*Zcold, 0.0,  0.0, -(1-R+beta_J)*Jfr, beta_J*Jfr, (1-R)*Jfr, 0.0, 0.0])
+    if Parameter.print_convergence and limited:
+        print "limited sfr by a factor", sfr_unlimited / sfr
 
-    return nonlinear_sfr_fb_term#, [mcold_molecular,Jcold_molecular]
+    #                                 halo  hot  cold             res       stars      hotZ coldZ                          resZ            stellarZ         haloJ hotJ coldJ             resJ        stellarJ
+    nonlinear_sfr_fb_term = np.array([ 0.0, 0.0, -(1-R+beta)*sfr, beta*sfr, (1-R)*sfr, 0.0, -(1-R+beta)*sfr*Zcold + p*sfr, beta*sfr*Zcold, (1-R)*sfr*Zcold, 0.0,  0.0, -(1-R+beta_J)*Jfr, beta_J*Jfr, (1-R)*Jfr])
+
+    return nonlinear_sfr_fb_term, [mcold_molecular,Jcold_molecular]
 
 
 if __name__=='__main__':
@@ -404,5 +535,9 @@ if __name__=='__main__':
     mstar_disk = 10**10.5
     Zcold = 0.02
     Jcold = 10
+    mcold_start = 10
+    Jcold_start = 10
+    mZcold_start = 10
+    dt = 10
 
-    nonlinear_sfr_fb_term(rdisks, vdisks, mcold, mstar_disk, Zcold, Jcold)
+    nonlinear_sfr_fb_term(rdisks, vdisks, mcold, mstar_disk, Zcold, Jcold, mcold_start, Jcold_start, mZcold_start, dt)

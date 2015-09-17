@@ -30,7 +30,7 @@ def X_from_Z_FeH(Z_FeH):
 def Load_Sutherland_Cooling_Grid():
     '''Read in Sutherland & Doptia cooling tables'''
 
-    path = "/cosma/home/d72fqv/Galform-2.5.3/Data/cooling/"
+    path = "./Data/"
     file_list = ["mzero.cie",
                  "m-30.cie",
                  "m-20.cie",
@@ -984,7 +984,7 @@ def Read_NFW_Data():
             a_tab = NFW scale length / virial radius
             vrot_norm_tab = normalisation term such that Vrot = vrot_norm * Vhalo * lambda_spin
             J_o_Vrot_tab = Total halo angular momentum for a flat velocity profile / Vrot, units are in Mhalo Rhalo'''
-    a_tab, vrot_norm_tab, J_o_Vrot_tab = np.loadtxt(Input_Data_Path.nfw,unpack=True, usecols=(0,1,2))
+    a_tab, vrot_norm_tab, J_o_Vrot_tab = np.loadtxt(Paths.nfw,unpack=True, usecols=(0,1,2))
     return a_tab, vrot_norm_tab, J_o_Vrot_tab
 
 a_tab, vrot_norm_tab, J_o_Vrot_tab = Read_NFW_Data()

@@ -4,7 +4,7 @@ print "loading merger tree"
 
 code_time1 = time.time()
 
-trees = pickle.load(open(Input_Data_Path.halo_data_path+"merger_trees"+Parameter.model_name+".p","rb"))
+trees = pickle.load(open(Paths.output_path + Parameter.model_name+ "/merger_trees.p","rb"))
 
 code_time2 = time.time()
 print "done, time taken = ", code_time2 - code_time1
@@ -113,7 +113,7 @@ print "writing merger trees to disk"
 # For large merger trees, we need to increase the recursion limit quite a bit when writing the merger tree to disk.
 sys.setrecursionlimit(50000)
 
-pickle.dump(trees,open(Input_Data_Path.output_data_path+"merger_trees_with_galaxies_"+Parameter.model_name+".p","wb"))
+pickle.dump(trees,open(Paths.output_path+Parameter.model_name+"/merger_trees_with_galaxies.p","wb"))
 
 
 print "done"

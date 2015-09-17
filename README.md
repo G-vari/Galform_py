@@ -10,7 +10,7 @@ To get started, do BLAH.
 ### Prerequisites
 
 You need a python installation with the core scientific packages: `numpy`, `matplotlib` and `scipy`.
-You also need the `emcee` package(http://dan.iel.fm/emcee) for MCMC sampling. Try
+Try
 
      easy_install numpy matplotlib scipy
 

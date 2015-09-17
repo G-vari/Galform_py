@@ -3,11 +3,10 @@ from halo_properties_routines import *; from cooling_routines import *; from mer
 
 code_t0 = time.time()
 
-# Read in data for one merger tree
+# Read in merger trees data
 
-path = Parameter.input_merger_tree_path
-
-trees_file = h5py.File(path,'r')
+input_file_path = Paths.input_path + Parameter.input_file
+trees_file = h5py.File(input_file_path,'r')
 
 a = np.array(trees_file["expansion_factor/a"])
 ntrees = np.array(trees_file["ntrees/ntrees"])
@@ -593,7 +592,7 @@ sys.setrecursionlimit(50000)
 
 outpath = "/gpfs/data/d72fqv/PythonSAM/halo_data/"
 
-cPickle.dump(trees,open(outpath+"merger_trees_"+Parameter.model_name+".p","wb"))
+cPickle.dump(trees,open(Paths.output_path+Parameter.model_name+"/merger_trees.p","wb"))
 
 
 print "done"

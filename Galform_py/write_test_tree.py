@@ -88,7 +88,7 @@ final_host_index = node_index[-1]
 
 ############# Write merger tree data to disk ###################
 
-output_path = "/gpfs/data/d72fqv/PythonSAM/input_data/"
+output_path = "./input_data/"
 filename = "merger_tree_test.hdf5"
 
 # Delete existing hdf5 file if one exists before writing a new one

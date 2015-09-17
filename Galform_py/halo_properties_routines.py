@@ -110,7 +110,7 @@ def NFW_Scale_Radius(mhalo, a):
 def Tabulate_rho_vir_o_rho_crit():
     amax = 1.1; alow = 0.1; amin = 0.05
 
-    Omega_tab, rho_vir_o_rho_crit_tab, delta_crit_tab = np.loadtxt(Input_Data_Path.spherical_collapse,unpack=True)
+    Omega_tab, rho_vir_o_rho_crit_tab, delta_crit_tab = np.loadtxt(Paths.spherical_collapse,unpack=True)
 
     inv_delta_a= (199)/(amax-amin) # I should probably do this in the initialisation process for the code, not every time we want this quantity
 
@@ -151,7 +151,7 @@ def Tabulate_Delta_Flat():
 
     NSUM=100
 
-    Omega_tab, rho_vir_o_rho_crit_tab, delta_crit_tab = np.loadtxt(Input_Data_Path.spherical_collapse,unpack=True)
+    Omega_tab, rho_vir_o_rho_crit_tab, delta_crit_tab = np.loadtxt(Paths.spherical_collapse,unpack=True)
     
     omflat = Omega_tab; density = rho_vir_o_rho_crit_tab; delflat  =delta_crit_tab
  
@@ -281,7 +281,7 @@ def Tabulate_Spline_Interpolation_Sigma_Mass():
     # This has not yet been implemented
 
     # Load tabulated spline fits of sigma as a function of m from input file
-    m_sigma_Mass, s_sigma_Mass, s2_sigma_Mass, a_sigma_Mass, a2_sigma_Mass = np.loadtxt(Input_Data_Path.spline_interpolation_sigma_mass,unpack=True)
+    m_sigma_Mass, s_sigma_Mass, s2_sigma_Mass, a_sigma_Mass, a2_sigma_Mass = np.loadtxt(Paths.spline_interpolation_sigma_mass,unpack=True)
 
     return m_sigma_Mass, s_sigma_Mass, s2_sigma_Mass, a_sigma_Mass, a2_sigma_Mass
 

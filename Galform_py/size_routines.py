@@ -1,5 +1,5 @@
 import numpy as np; from scipy.optimize import brentq; import time; from utilities_interpolation import *; from input_parameters import *
-from scipy.optimize import root
+import scipy.optimize
 
 print "Tabulating size quantities"
 size_t0 = time.time()
@@ -328,7 +328,7 @@ def Calculate_Decoupled_Disk_Sizes(Jdisks, mdisks, strc, mhalo, rhalo):
 
     fhalo = (mhalo - mdisk) / mhalo   
 
-    solution = root(Vector_Root_eqn_Decoupled_Disks, x0 = [rdisk_guess, rdisk_guess], args=(cdisks,mhalo,rhalo,strc,fhalo,mdisks), jac=None, method='hybr')
+    solution = scipy.optimize.root(Vector_Root_eqn_Decoupled_Disks, x0 = [rdisk_guess, rdisk_guess], args=(cdisks,mhalo,rhalo,strc,fhalo,mdisks), jac=None, method='hybr')
 
     rdisk_gas = solution.x[0] # kpc
     rdisk_star = solution.x[1] # kpc
@@ -453,7 +453,7 @@ def Calculate_Decoupled_Disk_Sizes_plus_Bulge(Jgal, mgal, strc, mhalo, rhalo):
 
     fhalo = (mhalo - mdisk - mbulge) / mhalo
 
-    solution = root(Vector_Root_eqn_Decoupled_Disks_plus_Bulge, x0 = rgal_guess, args=(cgal,mhalo,rhalo,strc,fhalo,mgal), jac=None, method='hybr')
+    solution = scipy.optimize.root(Vector_Root_eqn_Decoupled_Disks_plus_Bulge, x0 = rgal_guess, args=(cgal,mhalo,rhalo,strc,fhalo,mgal), jac=None, method='hybr')
 
     rdisk_gas = solution.x[0] # kpc
     rdisk_star = solution.x[1] # kpc
