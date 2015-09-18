@@ -9,16 +9,16 @@ To get started, do BLAH.
 
 ### Prerequisites
 
-You need a python installation with the core scientific packages: `numpy`, `matplotlib` and `scipy`.
+You need a python installation with the core scientific packages: `numpy`, `matplotlib`, `h5py` and `scipy`.
 Try
 
-     easy_install numpy matplotlib scipy
+     easy_install numpy matplotlib scipy h5py
 
 or
 
-     pip install numpy matplotlib scipy
+     pip install numpy matplotlib scipy h5py
 
-to install these dependences if you miss them.
+to install these packages if you don't have them.
 
 ## Authors
 Peter Mitchell [ICC, Durham / CRAL, Lyon]
